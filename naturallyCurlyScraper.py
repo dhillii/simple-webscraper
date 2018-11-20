@@ -5,7 +5,20 @@ import json
 
 def main():
 
+    print("""
+______      _         ______ _                       
+|  _  \    | |        | ___ (_)                      
+| | | |__ _| |_ __ _  | |_/ /_ _ __  _ __   ___ _ __ 
+| | | / _` | __/ _` | |    /| | '_ \| '_ \ / _ \ '__|
+| |/ / (_| | || (_| | | |\ \| | |_) | |_) |  __/ |   
+|___/ \__,_|\__\__,_| \_| \_|_| .__/| .__/ \___|_|   
+                              | |   | |              
+                              |_|   |_|            
+    
+    """)
+
     http = urllib3.PoolManager()
+    urllib3.disable_warnings()
 
     start_url = 'https://shop.naturallycurly.com/find-your-texture-type/'
 
@@ -44,19 +57,28 @@ def main():
 #let me push before I forget
 def pageWalker(secondary_links, database):
 
+    print("==============================RUNNING==================================")
+
     http = urllib3.PoolManager()
 
     iterator = '?sort=featured&page='
 
+    num_products = 0
+    pages_viewed = 1
+
     #for every link - key value
     for link, key in zip(secondary_links, database['hair_types']):
         start = 1
-        time.sleep(2)
 
+        time.sleep(1)
+        
         #For each page paginate through the first 5 pages
         for subpage in range(5):
             new_link = link + iterator + str(start)
             start += 1
+
+            time.sleep(1)
+            
             
             page_request = http.request('GET', new_link)
             soup = BeautifulSoup(page_request.data, 'html.parser')
@@ -66,7 +88,11 @@ def pageWalker(secondary_links, database):
                 a = prod.contents[1]
                 product = scrapeProduct(a['href'])
                 database['hair_types'][key]['products'].append(product)
-                time.sleep(2)
+                num_products += 1
+                print("Status:", num_products, "products collected.")
+                print("Pages Scraped: ", pages_viewed)
+
+            pages_viewed += 1
       
     with open('curl-iq-final.json', 'w') as file:
         json.dump(database, file)
