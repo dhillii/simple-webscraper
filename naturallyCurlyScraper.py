@@ -40,19 +40,6 @@ def main():
     pageWalker(secondary_links, database)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 #unfortunately this will probably be O(n*n) but at 3am I cant think of anything better.
 #let me push before I forget
 def pageWalker(secondary_links, database):
@@ -80,8 +67,7 @@ def pageWalker(secondary_links, database):
                 product = scrapeProduct(a['href'])
                 database['hair_types'][key]['products'].append(product)
                 time.sleep(2)
-
-                
+      
     with open('curl-iq-final.json', 'w') as file:
         json.dump(database, file)
                 
@@ -116,7 +102,6 @@ def scrapeProduct(url):
     description = description.replace('\n', '')
     description = description.replace('\xa0', '')
 
-
     prod_img_element = soup.find('img', alt=prod_name)                          # Gets image element ang source url
     prod_img = prod_img_element['src']
 
@@ -126,7 +111,6 @@ def scrapeProduct(url):
 
     except:
         ingredients = "Could not find..."     
-
 
     product[prod_name] ={'prod_brand':brand, 'prod_type': prod_type ,'price': prod_price,'description':description, 'ingredients':ingredients,'image': prod_img, 'prod_url': url}
 
