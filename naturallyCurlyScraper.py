@@ -70,16 +70,11 @@ def pageWalker(secondary_links, database):
     for link, key in zip(secondary_links, database['hair_types']):
         start = 1
 
-        time.sleep(1)
-        
         #For each page paginate through the first 5 pages
         for subpage in range(5):
             new_link = link + iterator + str(start)
             start += 1
 
-            time.sleep(1)
-            
-            
             page_request = http.request('GET', new_link)
             soup = BeautifulSoup(page_request.data, 'html.parser')
 
@@ -90,12 +85,13 @@ def pageWalker(secondary_links, database):
                 database['hair_types'][key]['products'].append(product)
                 num_products += 1
                 print("Status:", num_products, "products collected.")
-                print("Pages Scraped: ", pages_viewed)
 
+            print("Pages Scraped: ", pages_viewed)
             pages_viewed += 1
       
-    with open('curl-iq-final.json', 'w') as file:
-        json.dump(database, file)
+            print("Writing data...")
+            with open('curl-iq-final.json', 'w') as file:
+                json.dump(database, file)
                 
 
 #This function scrapes product data from a product page on NaturallyCurly.com works for the most part
@@ -109,10 +105,19 @@ def scrapeProduct(url):
     page = http.request('GET', url)
     soup = BeautifulSoup(page.data, 'html.parser')
 
-    prod_price = soup.find(class_ = 'price-value').get_text()
-    prod_price = prod_price.strip()
+    try:
+        prod_price = soup.find(class_ = 'price-value').get_text()
+        prod_price = prod_price.strip()
 
-    prod_name = soup.find(class_='product-title').get_text()                    # Gets product title, brand, and description
+    except:
+        prod_price = "Price Unavailable"
+
+    try:
+        prod_name = soup.find(class_='product-title').get_text()                    # Gets product title, brand, and description
+
+    except:
+
+        return {}
 
     product_string = prod_name.lower()
 
@@ -122,14 +127,27 @@ def scrapeProduct(url):
         if key in product_string:
             prod_type = classifiers[key]
 
-    brand = soup.find(class_='product-brand').get_text()
-    description = soup.find(id='product-tab-description').get_text()
-    description = description.strip()
-    description = description.replace('\n', '')
-    description = description.replace('\xa0', '')
+    try:
+        brand = soup.find(class_='product-brand').get_text()
 
-    prod_img_element = soup.find('img', alt=prod_name)                          # Gets image element ang source url
-    prod_img = prod_img_element['src']
+    except:
+        brand = ""
+
+    try:    
+        description = soup.find(id='product-tab-description').get_text()
+        description = description.strip()
+        description = description.replace('\n', '')
+        description = description.replace('\xa0', '')
+    except:
+        description = "No description available."
+
+    try:
+        prod_img_element = soup.find('img', alt=prod_name)                          # Gets image element ang source url
+        prod_img = prod_img_element['src']
+
+    except:
+        prod_img = "No image available"
+
 
     try:
         ingredients = soup.find('strong', text='Ingredients:').next_sibling     # Get next sibling of Key ingredients 
